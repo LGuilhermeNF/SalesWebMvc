@@ -32,12 +32,19 @@ namespace SalesWebMvc.Services
         {
             return await _context.Seller.Include(obj => obj.Department).FirstOrDefaultAsync(seller => seller.Id == id);
         }
-
+        
         public async Task RemoveAsync(int id)
         {
-            var seller = await _context.Seller.FindAsync(id);
-            _context.Seller.Remove(seller);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var seller = await _context.Seller.FindAsync(id);
+                _context.Seller.Remove(seller);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new IntegrityException("Esta ação não pode ser executada. Vendedor(a) possui histórico de vendas.");
+            }
         }
 
         public async Task UpdateAsync(Seller seller)
